@@ -7,13 +7,17 @@ ant authentication stuff
 # import libs _________________________________________________________
 import model
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from datetime import datetime, timedelta
+from jose import jwt
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 from passlib.context import CryptContext
 from database import engine, SessionLocal
 
+SECRET_KEY = "ItIsS000Secret!"
+ALGORITHM  = "HS256"
 
 app = FastAPI()
 # create table if auth run before main
@@ -21,6 +25,9 @@ model.Base.metadata.create_all(bind=engine)
 
 # hashing contex
 bcrypt_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# jwt 
+auth2bearer = OAuth2PasswordBearer(tokenUrl="token")
 
 # authenticate user
 def authenticate_user(username: str, password: str, db):
@@ -45,6 +52,19 @@ def get_db():
         db.close()
 
 
+def create_access_token(username: str, user_id: int, expires_delta: Optional[timedelta]=None):
+    """create access json web token"""
+    encode = {"sub": username, "id": user_id}
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    
+    encode.update({"exp": expire})
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)    
+    
+    
+
 # base model for user _________________________________________________
 class CreateUser(BaseModel):
     """ create base model for user"""
@@ -55,6 +75,7 @@ class CreateUser(BaseModel):
     password: str
        
 
+# html methodes _______________________________________________________
 @app.post("/create/user")
 async def create_new_user(create_user: CreateUser, db: Session=Depends(get_db)):
     """creating new user"""
@@ -79,8 +100,12 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     if not user:
         raise HTTPException(status_code=404, 
                          detail="Oops!User not found or Password is wrong!")
-    return "User Valdated Successfuly!"   
-           
+    
+    token = create_access_token(user.username, user.id,
+                                expires_delta=timedelta(minutes=20))   
+    return {"token": token}
+
+
 # common function for reusing__________________________________________
 
 # successful response
