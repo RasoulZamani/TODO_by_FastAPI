@@ -6,10 +6,10 @@ ant authentication stuff
 
 # import libs _________________________________________________________
 import model
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from datetime import datetime, timedelta
-from jose import jwt
+from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
@@ -64,6 +64,19 @@ def create_access_token(username: str, user_id: int, expires_delta: Optional[tim
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)    
     
     
+async def get_current_user(token:str = Depends(auth2bearer)):
+    """ get username and id from current user jwt"""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        username: str = payload.get("sub")
+        user_id: int  = payload.get("id")
+        if username is None or user_id is None:
+            raise user_exception()
+        
+        return {"username":username, "id": user_id}
+        
+    except JWTError:
+        raise token_exception
 
 # base model for user _________________________________________________
 class CreateUser(BaseModel):
@@ -98,9 +111,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     """login for access token"""
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
-        raise HTTPException(status_code=404, 
-                         detail="Oops!User not found or Password is wrong!")
-    
+        raise user_exception()
     token = create_access_token(user.username, user.id,
                                 expires_delta=timedelta(minutes=20))   
     return {"token": token}
@@ -117,10 +128,23 @@ def successful_response(status_code: int):
     } 
 
       
-# exception not found
-def not_found_exception():
-    """if item in todo table not found, we'll raise exception"""
-    return HTTPException(status_code=404, 
-                         detail="Oops!not found!")
+# get token_exception
+def token_exception():
+    """get token exception"""
+    token_exc = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials!",
+        headers={"WWW-Authenticate": "Bearer"}
+        )
+    return token_exc
 
-    
+# get user exception
+def user_exception():
+    """get user exception"""
+    credetials_exc = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Incorrect username or password!",
+        headers={"WWW-Authenticate": "Bearer"}
+        )
+    return credetials_exc
+ 
