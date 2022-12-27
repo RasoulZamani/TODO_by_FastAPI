@@ -1,8 +1,8 @@
 # TODO_by_FastAPI
 
-This is a simple educational web app by **FasTAPI**
+This is a simple educational web app by **FastAPI**
 
-After connecting to **sqlite** database by ** SQLalchemy (ORM)**,**CRUD** methodes (create, read, update and delete) was implemented
+After connecting to **sqlite** database by **SQLalchemy (ORM)**,**CRUD** methodes (create, read, update and delete) was implemented
 
 
 
