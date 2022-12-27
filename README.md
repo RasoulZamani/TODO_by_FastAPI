@@ -1,4 +1,4 @@
-# TODO_by_FastAPI
+# TODO App by FastAPI
 
 This is a simple educational web app by **FastAPI**
 
