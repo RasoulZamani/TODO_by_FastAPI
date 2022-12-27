@@ -102,7 +102,28 @@ async def update_item(todo_id: int, todo: Todo, db: Session = Depends(get_db)):
         "update": "Successful"
     }
      
+     
+ 
+# delete item with specified id
+@app.delete("/{todo_id}")
+async def delete_item(todo_id: int, db: Session = Depends(get_db)):
+    """after connecting to db, delete todo item"""
+    todo_model = db.query(model.Todo)\
+            .filter(model.Todo.id == todo_id)\
+            .first()
+    if todo_model is None:
+        raise not_found_exception()
     
+    db.query(model.Todo)\
+            .filter(model.Todo.id == todo_id)\
+            .delete()
+        
+    db.commit()
+    
+    return {
+        "status": 201,
+        "update": "Successful"
+    } 
     
 # exception not found
 def not_found_exception():
