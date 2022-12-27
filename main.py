@@ -72,10 +72,7 @@ async def create_todo_item(todo: Todo, db: Session = Depends(get_db)):
     db.add(todo_model)
     db.commit()
     
-    return {
-        "status": 201,
-        "transaction": "Successful"
-    }
+    return successful_response(201)
     
  
 # put (update) item with specified id
@@ -97,14 +94,10 @@ async def update_item(todo_id: int, todo: Todo, db: Session = Depends(get_db)):
     db.add(todo_model)
     db.commit()
     
-    return {
-        "status": 200,
-        "update": "Successful"
-    }
+    return successful_response(200)
      
-     
- 
-# delete item with specified id
+      
+# delete item with specified id _______________________________________
 @app.delete("/{todo_id}")
 async def delete_item(todo_id: int, db: Session = Depends(get_db)):
     """after connecting to db, delete todo item"""
@@ -120,11 +113,20 @@ async def delete_item(todo_id: int, db: Session = Depends(get_db)):
         
     db.commit()
     
+    return successful_response(201)
+    
+    
+# common function for reusing__________________________________________
+
+# successful response
+def successful_response(status_code: int):
+    """returning dectionary with seccess massage and assosiated code"""
     return {
-        "status": 201,
-        "update": "Successful"
+        "status": status_code,
+        "transaction": "Successful"
     } 
     
+     
 # exception not found
 def not_found_exception():
     """if item in todo table not found, we'll raise exception"""
