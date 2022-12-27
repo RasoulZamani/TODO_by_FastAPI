@@ -12,6 +12,9 @@ import model
 from database import engine, SessionLocal
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
+from pydantic import BaseModel, Field
+from typing import Optional
+ 
 
 
 # instantiate app
@@ -27,6 +30,14 @@ def get_db():
         yield db
     finally:
         db.close()
+        
+
+class Todo(BaseModel):
+    """base model for items in db"""
+    title: str
+    description: Optional[str]
+    priority: int = Field(gt=0, lt=6, description="the priority must be between 1-5")
+    complete: bool
         
 # read all data
 @app.get('/')
@@ -47,6 +58,24 @@ async def read_todo_by_id(todo_id: int, db: Session = Depends(get_db)):
     raise not_found_exception()
 
 
+@app.post("/")
+async def create_todo_item(todo: Todo, db: Session = Depends(get_db)):
+    """after connecting to db, create todo item and adding to db"""
+    todo_model = model.Todo()
+    
+    todo_model.title = todo.title
+    todo_model.description = todo.description
+    todo_model.priority = todo.priority
+    todo_model.complete = todo.complete
+    
+    db.add(todo_model)
+    db.commit()
+    
+    return {
+        "status": 201,
+        "transaction": "Successful"
+    }
+    
 
 def not_found_exception():
     """if item in todo table not found, we'll raise exception"""
