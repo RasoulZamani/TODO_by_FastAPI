@@ -81,7 +81,7 @@ async def get_current_user(token:str = Depends(auth2bearer)):
         return {"username":username, "id": user_id}
         
     except JWTError:
-        raise token_exception
+        raise token_exception()
 
 # base model for user _________________________________________________
 class CreateUser(BaseModel):
