@@ -2,6 +2,11 @@
 auth.py for creating new user and adding it to database
 and hashing password by bcrypt 
 ant authentication stuff
+
+#running: after activate env, type in terminal :
+uvicorn main:app --reload --port <number different to main app port>
+then in web browser:
+http://127.0.0.1:<port_num>/docs for interactive test
 """
 
 # import libs _________________________________________________________

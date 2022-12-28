@@ -14,8 +14,8 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from typing import Optional
+from auth import get_current_user, token_exception
  
-
 
 # instantiate app
 app = FastAPI()
@@ -45,7 +45,16 @@ async def read_all_list(db: Session=Depends(get_db)):
     """first get database and then reading all jobs in todo table """ 
     return db.query(model.Todo).all()
 
-
+# read todo list of autenticated user__________________________________
+@app.get("/todo/user")
+async def read_all_todo_by_user(user: dict = Depends(get_current_user),
+                                db: Session = Depends(get_db)):
+    """read all todo by user"""
+    if user is None:
+        raise token_exception()
+    return db.query(model.Todo)\
+        .filter(model.Todo.owner_id == user.get("id"))\
+        .all() 
 # read data with specified id _________________________________________
 @app.get("/todo/{todo_id}")
 async def read_todo_by_id(todo_id: int, db: Session = Depends(get_db)):
