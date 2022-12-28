@@ -7,6 +7,7 @@ After connecting to **sqlite** database by **SQLalchemy (ORM)**,**CRUD** methode
 user and todo tables and also one-to-many relationship between them (by ForeignKey) is implemented  
 **JWT** (json web token) is used for authentication
 
+Also routing auth in main file done for more conveninet.
 
 # requirements
 install these libs in your system (virtual environment recomended):
