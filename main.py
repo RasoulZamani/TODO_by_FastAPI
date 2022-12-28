@@ -14,14 +14,17 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from typing import Optional
-from auth import get_current_user, token_exception
- 
+from router.auth import get_current_user, token_exception
+from router import auth
 
 # instantiate app
 app = FastAPI()
 
 # create table
 model.Base.metadata.create_all(bind=engine)
+
+# routing auth
+app.include_router(auth.router)
 
 def get_db():
     """ geeting database either successfully or not and close it """
@@ -142,7 +145,7 @@ async def delete_item(todo_id: int,
             .filter(model.Todo.id == todo_id)\
             .filter(model.Todo.owner_id == user.get("id"))\
             .first()
-            
+             
     if todo_model is None:
         raise not_found_exception()
     
