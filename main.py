@@ -55,12 +55,19 @@ async def read_all_todo_by_user(user: dict = Depends(get_current_user),
     return db.query(model.Todo)\
         .filter(model.Todo.owner_id == user.get("id"))\
         .all() 
+        
+        
 # read data with specified id _________________________________________
 @app.get("/todo/{todo_id}")
-async def read_todo_by_id(todo_id: int, db: Session = Depends(get_db)):
+async def read_todo_by_id(todo_id: int,
+                          user: dict = Depends(get_current_user),
+                          db: Session = Depends(get_db)):
     """first get database and then read data with specified id"""
+    if user is None:
+        raise token_exception()
     result = db.query(model.Todo)\
             .filter(model.Todo.id == todo_id)\
+            .filter(model.Todo.owner_id == user.get("id"))\
             .first()
     if result is not None:
         return result
@@ -69,14 +76,20 @@ async def read_todo_by_id(todo_id: int, db: Session = Depends(get_db)):
 
 # post new todo item __________________________________________________ 
 @app.post("/")
-async def create_todo_item(todo: Todo, db: Session = Depends(get_db)):
+async def create_todo_item(todo: Todo,
+                           user: dict = Depends(get_current_user),
+                           db: Session = Depends(get_db)):
     """after connecting to db, create todo item and adding to db"""
+    if user is None:
+        raise token_exception()
+    
     todo_model = model.Todo()
     
     todo_model.title = todo.title
     todo_model.description = todo.description
     todo_model.priority = todo.priority
     todo_model.complete = todo.complete
+    todo_model.owner_id = user.get("id")
     
     db.add(todo_model)
     db.commit()
@@ -86,11 +99,20 @@ async def create_todo_item(todo: Todo, db: Session = Depends(get_db)):
  
 # put (update) item with specified id
 @app.put("/{todo_id}")
-async def update_item(todo_id: int, todo: Todo, db: Session = Depends(get_db)):
+async def update_item(todo_id: int,
+                      todo: Todo,
+                      user: dict = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
     """after connecting to db, updating todo item"""
+    
+    if user is None:
+        raise token_exception()
+    
     todo_model = db.query(model.Todo)\
             .filter(model.Todo.id == todo_id)\
+            .filter(model.Todo.owner_id == user.get("id"))\
             .first()
+            
     if todo_model is None:
         raise not_found_exception()
     
@@ -108,11 +130,19 @@ async def update_item(todo_id: int, todo: Todo, db: Session = Depends(get_db)):
       
 # delete item with specified id _______________________________________
 @app.delete("/{todo_id}")
-async def delete_item(todo_id: int, db: Session = Depends(get_db)):
+async def delete_item(todo_id: int,
+                      user: dict = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
     """after connecting to db, delete todo item"""
+    
+    if user is None:
+        raise token_exception()
+    
     todo_model = db.query(model.Todo)\
             .filter(model.Todo.id == todo_id)\
+            .filter(model.Todo.owner_id == user.get("id"))\
             .first()
+            
     if todo_model is None:
         raise not_found_exception()
     
