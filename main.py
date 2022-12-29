@@ -12,7 +12,7 @@ import model
 from database import engine
 from fastapi import FastAPI, Depends
 
-from router import auth, todo_apis
+from router import auth, todo_apis, user_apis
 from company_api import company_api, dependencies
 # instantiate app
 app = FastAPI()
@@ -23,8 +23,11 @@ model.Base.metadata.create_all(bind=engine)
 # add rout of auth
 app.include_router(auth.router)
 
-# add rout of apis
+# add rout of todo apis 
 app.include_router(todo_apis.router)
+
+# add rout of user apis 
+app.include_router(user_apis.router)
 
 # external rout to company api
 app.include_router(company_api.router,
