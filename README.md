@@ -10,12 +10,8 @@ user and todo tables and also one-to-many relationship between them (by ForeignK
 Also routing auth in main file done for more conveninet.
 
 # requirements
-install these libs in your system (virtual environment recomended):
+install  libs in mantianed in [requirements.txt](requirements.txt) on your system (virtual environment recomended):
 
-```
-
-
-```
 
 # run
 first cloning this repo and go to directory.

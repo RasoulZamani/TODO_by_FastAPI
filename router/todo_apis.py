@@ -8,11 +8,14 @@ sys.path.append("..") # adding parent folder to path
 
 import model
 from database import engine, SessionLocal
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from typing import Optional
 from .auth import get_current_user, token_exception
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+
 
 
 # instantiate routerr
@@ -24,6 +27,9 @@ router = APIRouter(
 )
 # create table
 model.Base.metadata.create_all(bind=engine)
+
+# create template
+template = Jinja2Templates(directory="templates")
 
 def get_db():
     """ geeting database either successfully or not and close it """
@@ -41,6 +47,14 @@ class Todo(BaseModel):
     priority: int = Field(gt=0, lt=6, description="the priority must be between 1-5")
     complete: bool
         
+ 
+# tets template 
+@router.get("/HomePage")
+async def test_homepage(request: Request):
+    "test html temp"
+    return template.TemplateResponse("home.html", {"request": request})       
+
+
 # read all data _______________________________________________________
 @router.get('/')
 async def read_all_list(db: Session=Depends(get_db)):
